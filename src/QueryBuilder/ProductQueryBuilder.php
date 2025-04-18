@@ -2,122 +2,115 @@
 
 namespace Amenessisse\PackageHeoAPI\QueryBuilder;
 
-use InvalidArgumentException;
-
-class ProductQueryBuilder
+class ProductQueryBuilder 
 {
-    /**
-     * Liste des opérateurs valides
-     */
-    const VALID_OPERATORS = ['==', '!=', '=lt=', '=le=', '=gt=', '=ge=', '=in='];
-
-    /**
-     * Tableau des conditions à appliquer.
-     * Chaque condition sera de la forme "champ opérateur valeur", par exemple "ageRating==1".
-     *
-     * @var array<string>
-     */
+    /** @var array */
     private $conditions = [];
 
+    /** @var string */
+    private $operator = 'and';
+
     /**
-     * Ajoute une condition.
-     *
-     * @param string $field     Le nom du champ (ex. 'ageRating', 'productNumber')
-     * @param string $operator  L'opérateur (ex. '==', '!=', '=lt=', '=gt=', '=in=')
-     * @param mixed  $value     La valeur à comparer
-     *
-     * @throws InvalidArgumentException Si l'opérateur n'est pas valide
-     * @return self
+     * Ajoute une condition au constructeur de requête
+     * 
+     * @param string $field Le champ sur lequel filtrer
+     * @param string $operator L'opérateur de comparaison
+     * @param mixed $value La valeur de filtre
+     * 
+     * @return $this
      */
     public function where(string $field, string $operator, $value): self
     {
-        $this->validateOperator($operator);
-        $this->validateField($field);
-        
-        $this->conditions[] = $this->buildCondition($field, $operator, $value);
+        $this->conditions[] = [
+            'field' => $field,
+            'operator' => $operator,
+            'value' => $value,
+            'logic' => $this->operator,
+        ];
 
         return $this;
     }
 
     /**
-     * Ajoute une condition avec "or".
-     * La condition sera automatiquement combinée avec la condition précédente via un OR.
-     *
-     * @param string $field     Le nom du champ
-     * @param string $operator  L'opérateur
-     * @param mixed  $value     La valeur à comparer
-     *
-     * @throws InvalidArgumentException Si l'opérateur n'est pas valide
-     * @return self
+     * Ajoute une condition "OR" au constructeur de requête
+     * 
+     * @param string $field Le champ sur lequel filtrer
+     * @param string $operator L'opérateur de comparaison
+     * @param mixed $value La valeur de filtre
+     * 
+     * @return $this
      */
     public function orWhere(string $field, string $operator, $value): self
     {
-        $this->validateOperator($operator);
-        $this->validateField($field);
-
-        $newCondition = $this->buildCondition($field, $operator, $value);
-
-        if (! empty($this->conditions)) {
-            $lastCondition = array_pop($this->conditions);
-            $this->conditions[] = sprintf("(%s) or (%s)", $lastCondition, $newCondition);
-        } else {
-            $this->conditions[] = $newCondition;
-        }
+        $prevOperator   = $this->operator;
+        $this->operator = 'or';
+        $this->where($field, $operator, $value);
+        $this->operator = $prevOperator;
 
         return $this;
     }
 
+    /** Shorthand pour un filtrage sur le champ ageRating */
+    public function whereAgeRating(string $operator, $value): self
+    {
+        return $this->where(ProductQueryFields::FIELD_AGE_RATING, $operator, $value);
+    }
+
+    /** Shorthand pour un filtrage sur le champ manufacturer */
+    public function whereManufacturer(string $operator, $value): self
+    {
+        return $this->where(ProductQueryFields::FIELD_MANUFACTURER, $operator, $value);
+    }
+
     /**
-     * Construit la query finale.
-     *
-     * @return string La query à utiliser pour les appels de l'API.
+     * Construit la chaîne de requête finale
+     * 
+     * @return string La chaîne de requête formatée
      */
     public function build(): string
     {
-        return implode(' and ', $this->conditions);
-    }
-
-    /**
-     * Vérifie si l'opérateur est valide.
-     *
-     * @param string $operator L'opérateur à vérifier
-     * @throws InvalidArgumentException
-     */
-    private function validateOperator(string $operator)
-    {
-        if (!in_array($operator, self::VALID_OPERATORS, true)) {
-            throw new InvalidArgumentException(
-                sprintf('Opérateur invalide : %s. Les opérateurs valides sont : %s',
-                    $operator,
-                    implode(', ', self::VALID_OPERATORS)
-                )
-            );
+        if (empty($this->conditions)) {
+            return '';
         }
-    }
 
-    /**
-     * Vérifie si le champ n'est pas vide.
-     *
-     * @param string $field Le champ à vérifier
-     * @throws InvalidArgumentException
-     */
-    private function validateField(string $field)
-    {
-        if (empty(trim($field))) {
-            throw new InvalidArgumentException('Le champ ne peut pas être vide');
+        $parts          = [];
+        $firstCondition = true;
+        
+        foreach ($this->conditions as $condition) {
+            $formattedValue = $this->formatValue($condition['value']);
+            
+            if ($firstCondition) {
+                $parts[] = "{$condition['field']}{$condition['operator']}{$formattedValue}";
+                $firstCondition = false;
+            } else {
+                $parts[] = "{$condition['logic']} {$condition['field']}{$condition['operator']}{$formattedValue}";
+            }
         }
+
+        return implode(' ', $parts);
     }
 
     /**
-     * Construit une condition unique.
+     * Formate la valeur en fonction de son type
+     * 
+     * @param mixed $value La valeur à formater
      *
-     * @param string $field
-     * @param string $operator
-     * @param mixed $value
-     * @return string
+     * @return string La valeur formatée
      */
-    private function buildCondition(string $field, string $operator, $value): string
+    private function formatValue($value): string
     {
-        return sprintf("%s%s%s", $field, $operator, $value);
+        if (is_array($value)) {
+            $formattedValues = [];
+            foreach ($value as $item) {
+                $formattedValues[] = $this->formatValue($item);
+            }
+            return '(' . implode(',', $formattedValues) . ')';
+        }
+
+        if (is_string($value) && (strpos($value, ' ') !== false || strpos($value, ',') !== false)) {
+            return '"' . $value . '"';
+        }
+        
+        return (string) $value;
     }
 }

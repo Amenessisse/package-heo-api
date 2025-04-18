@@ -26,6 +26,9 @@ class HeoApiClient
     const HEO_PRICES = '/catalog/prices';
     const HEO_AVAILABILITIES = '/catalog/availabilities';
 
+    // Formats de réponse supportés
+    const FORMAT_JSON = 'application/json';
+    const FORMAT_CSV = 'text/csv; charset=utf-8';
 
     /** @var string */
     private $username;
@@ -33,7 +36,7 @@ class HeoApiClient
     private $password;
     /** @var HttpClientInterface */
     private $httpClient;
-    /* @var string */
+    /** @var string */
     private $urlAPI;
 
    /**
@@ -54,7 +57,7 @@ class HeoApiClient
      *
      * @throws Exception
      */
-    private function get(string $uri, array $query = []): ResponseInterface
+    private function get(string $uri, array $query = [], string $format = self::FORMAT_JSON): ResponseInterface
     {
         $queryString = http_build_query($query, '', '&', PHP_QUERY_RFC3986);
 
@@ -68,7 +71,7 @@ class HeoApiClient
 
         try {
             return $this->httpClient->request('GET', $url, [
-                'headers' => ['Accept' => 'application/json'],
+                'headers' => ['Accept' => $format],
                 'auth_basic' => [$this->username, $this->password],
             ]);
         } catch (TransportExceptionInterface $e) {
@@ -116,6 +119,12 @@ class HeoApiClient
     public function getCatalog(): ResponseInterface
     {
         return $this->get(self::HEO_CATALOG);
+    }
+
+    /** @throws Exception */
+    public function getCatalogCsv(): ResponseInterface
+    {
+        return $this->get(self::HEO_CATALOG, [], self::FORMAT_CSV);
     }
 
     /**
@@ -174,13 +183,12 @@ class HeoApiClient
      * @param string|ProductQueryBuilder|null $query     Une chaîne de requête ou un objet ProductQueryBuilder
      * @param int $page                                  Numéro de page demandé (démarrant à 1)
      * @param int $pageSize                              Nombre d'éléments par page (entre 1 et 100)
-     * 
+     *
      * @throws InvalidArgumentException                 Si les paramètres de pagination sont invalides
      * @return array<string, mixed>                      Tableau des paramètres formatés pour l'API
      */
     private function prepareQueryParams($query, int $page, int $pageSize): array
     {
-        // Validation des paramètres de pagination
         if ($page < 1) {
             throw new InvalidArgumentException("Le numéro de page doit être supérieur ou égal à 1, '$page' fourni");
         }
@@ -189,7 +197,6 @@ class HeoApiClient
             throw new InvalidArgumentException("La taille de page doit être comprise entre 1 et 100, '$pageSize' fourni");
         }
         
-        // Extraction de la requête
         $queryString = '';
         if ($query instanceof ProductQueryBuilder) {
             $queryString = $query->build();
@@ -202,7 +209,6 @@ class HeoApiClient
             ));
         }
     
-        // Construction des paramètres
         $params = [];
         if ($queryString !== '') {
             $params['query'] = $queryString;
