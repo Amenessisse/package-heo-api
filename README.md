@@ -16,7 +16,7 @@ composer require amenessisse/package-heo-api
 ## Configuration requise
 
 - PHP 7.0 ou supérieur
-- Symfony HTTP Client 6.0 ou supérieur
+- Symfony HTTP Client 5.0 ou supérieur
 
 ## Utilisation de base
 
