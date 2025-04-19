@@ -107,7 +107,9 @@ Le constructeur de requêtes permet de créer des filtres complexes pour vos req
 - `==` : égalité
 - `!=` : différence
 - `=lt=` : inférieur à
+- `=le=` : inférieur ou égal à
 - `=gt=` : supérieur à
+- `=ge=` : supérieur ou égal à
 - `=in=` : appartient à
 
 ### Méthodes
@@ -174,11 +176,17 @@ Le client expose plusieurs constantes définissant les endpoints de l'API :
 - `HEO_PRICES` : Endpoint des prix
 - `HEO_AVAILABILITIES` : Endpoint des disponibilités
 
-## Notes
+## Mode Sandbox
 
-- Toutes les méthodes de l'API retournent un objet `ResponseInterface` de Symfony HTTP Client
-- Utilisez la méthode `toArray()` sur la réponse pour obtenir les données au format tableau
-- Le package utilise la version de test de l'API Heo par défaut (`https://integrate.heo.com/retailer-api-test/`)
+Le client HeoApiClient offre la possibilité de basculer entre l'environnement de production et l'environnement de test (sandbox) :
+
+```php
+// Lors de l'initialisation (true = sandbox, false = production)
+$client = new HeoApiClient('votre_nom_utilisateur', 'votre_mot_de_passe', true);
+
+// Ou via la méthode dédiée
+$client->setSandboxMode(true);  // Utiliser l'environnement de test
+$client->setSandboxMode(false); // Basculer vers l'environnement de production
 
 ## Licence
 
