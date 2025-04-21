@@ -231,4 +231,18 @@ class HeoApiClient
     {
         return $this->urlAPI;
     }
+
+    /**
+     * Valide la connexion en jouant une requête vers l'API.
+     *
+     * @return bool
+     * @throws Exception
+     * @throws TransportExceptionInterface
+     * */
+    public function isValidConnection(): bool
+    {
+        $response = $this->getProducts(null, 1, 1);
+
+        return $response->getStatusCode() === 200;
+    }
 }
