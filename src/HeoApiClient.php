@@ -182,7 +182,7 @@ class HeoApiClient
      *
      * @param string|ProductQueryBuilder|null $query     Une chaîne de requête ou un objet ProductQueryBuilder
      * @param int $page                                  Numéro de page demandé (démarrant à 1)
-     * @param int $pageSize                              Nombre d'éléments par page (entre 1 et 100)
+     * @param int $pageSize                              Nombre d'éléments par page (supérieur ou égal à 1)
      *
      * @throws InvalidArgumentException                 Si les paramètres de pagination sont invalides
      * @return array<string, mixed>                      Tableau des paramètres formatés pour l'API
@@ -193,8 +193,8 @@ class HeoApiClient
             throw new InvalidArgumentException("Le numéro de page doit être supérieur ou égal à 1, '$page' fourni");
         }
         
-        if ($pageSize < 1 || $pageSize > 100) {
-            throw new InvalidArgumentException("La taille de page doit être comprise entre 1 et 100, '$pageSize' fourni");
+        if ($pageSize < 1) {
+            throw new InvalidArgumentException("La taille de page doit être supérieur ou égal à 1, '$pageSize' fourni");
         }
         
         $queryString = '';
