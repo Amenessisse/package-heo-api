@@ -2,7 +2,6 @@
     "name": "amenessisse/package-heo-api",
     "description": "Package bridge Heo API",
     "type": "library",
-    "version": "1.1.0",
     "require": {
         "php": "^7.0|^8.0",
         "symfony/http-client": "^5.0|^6.0|^7.0"
