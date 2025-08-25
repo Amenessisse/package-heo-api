@@ -26,6 +26,9 @@ class HeoApiClient
     const HEO_PRICES = '/catalog/prices';
     const HEO_AVAILABILITIES = '/catalog/availabilities';
 
+    // Limite maximale de longueur d'URL (en caractères)
+    const MAX_URL_LENGTH = 2048;
+
     // Formats de réponse supportés
     const FORMAT_JSON = 'application/json';
     const FORMAT_CSV = 'text/csv; charset=utf-8';
@@ -56,6 +59,7 @@ class HeoApiClient
      * Effectue une requête GET vers l'API en ajoutant les query parameters éventuels.
      *
      * @throws Exception
+     * @throws UrlLengthExceededException
      */
     private function get(string $uri, array $query = [], string $format = self::FORMAT_JSON): ResponseInterface
     {
@@ -68,6 +72,12 @@ class HeoApiClient
         }
 
         $url = $this->urlAPI . $uri . ($queryString ? '?' . $queryString : '');
+
+        // Validation de la longueur de l'URL
+        $urlLength = strlen($url);
+        if ($urlLength > self::MAX_URL_LENGTH) {
+            throw new UrlLengthExceededException($urlLength, self::MAX_URL_LENGTH);
+        }
 
         try {
             return $this->httpClient->request('GET', $url, [
