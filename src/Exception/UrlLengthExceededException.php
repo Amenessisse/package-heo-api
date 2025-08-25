@@ -1,6 +1,6 @@
 <?php
 
-namespace Amenessisse\PackageHeoAPI;
+namespace Amenessisse\PackageHeoAPI\Exception;
 
 use Exception;
 

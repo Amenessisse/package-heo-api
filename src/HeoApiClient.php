@@ -2,13 +2,14 @@
 
 namespace Amenessisse\PackageHeoAPI;
 
+use Amenessisse\PackageHeoAPI\Exception\UrlLengthExceededException;
+use Amenessisse\PackageHeoAPI\QueryBuilder\ProductQueryBuilder;
 use Exception;
 use InvalidArgumentException;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
-use Amenessisse\PackageHeoAPI\QueryBuilder\ProductQueryBuilder;
 
 class HeoApiClient
 {
