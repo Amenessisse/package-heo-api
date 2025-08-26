@@ -1,22 +1,25 @@
 {
     "name": "amenessisse/package-heo-api",
     "description": "Package bridge Heo API",
+    "homepage":"https://github.com/Amenessisse/package-heo-api",
+    "keywords": ["heo","api","bridge","client"],
     "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Amenessisse",
+            "email": "amenessisse@gmail.com"
+            "role": "Developper"
+        }
+    ],
     "require": {
         "php": "^7.0|^8.0",
         "symfony/http-client": "^5.0|^6.0|^7.0"
     },
-    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Amenessisse\\PackageHeoAPI\\": "src/"
         }
     },
-    "authors": [
-        {
-            "name": "Amenessisse",
-            "email": "amenessisse@gmail.com"
-        }
-    ],
     "minimum-stability": "stable"
 }
